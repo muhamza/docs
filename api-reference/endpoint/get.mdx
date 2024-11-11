@@ -14,3 +14,116 @@ To access this endpoint, you need an API key, which must be provided in the requ
 
 * **Header Key:** X-API-KEY
 * **Header Value:** sph\_api\_key
+
+#### **<u>Field Descriptions</u>**
+
+#### **Field Descriptions for Request**
+
+**1. customer\_address (object, required):**
+Contains the customer's address details for tax calculation.
+
+* **address1** (string, optional): First line of the address.
+* **address2** (string, optional): Second line of the address.
+* **city** (string, required): City name.
+* **state** (string, optional): State or region.
+* **postal\_code** (string, required): Postal or ZIP code.
+* **country** (string, required): Country name.
+
+**2. line\_items (array of objects, required):**
+A list of items for which tax needs to be calculated.
+
+Each item includes:
+
+* **amount** (integer, required): The item's price in cents (e.g., 10000 for $100.00).
+* **product\_id** (string, required): Unique identifier for the product.This id has already been defined in Sphere (under the Products tab).
+* **discount\_amount** (integer, optional, default 0): Discount applied to the item in cents.
+* **tax\_inclusive** (boolean, optional, default false): Indicates if the item price includes tax.
+
+**3. currency (string, required):**
+The currency code (ISO 4217 format) in which the amounts are specified. For example: "usd".
+
+
+
+**Request Structure**
+
+The request should be in JSON format. Here is a sample request payload:
+
+```
+{
+  "customer_address": {
+    "address1": "Investors Boulevard",
+    "city": "Myrtle Beach",
+    "state": "SC",
+    "postal_code": "29579",
+    "country": "US"
+  },
+  "line_items": [
+    {
+      "amount": 10000,
+      "product_id": "prod_RArEhwhXLfX5jF",
+      "discount_amount": 0,
+      "tax_inclusive": false
+    }
+  ],
+  "currency": "usd"
+}
+
+```
+
+#### **Field Descriptions for Response**
+
+* **lines** (array): Contains tax information for each line item.
+  * **id** (string): Product ID of the line item.
+  * **tax\_amounts** (array): A list of taxes applied to the line item.
+    * **amount** (integer): Tax amount in cents for this specific tax.
+    * **taxable\_amount** (integer): Amount subject to the tax in cents.
+    * **tax\_rate** (object): Details of the tax rate applied.
+      * **percentage** (float): Tax rate as a percentage.
+      * **inclusive** (boolean): Indicates if the tax is inclusive.
+      * **display\_name** (string): Name of the tax (e.g., "Tourism Development Tax").
+      * **jurisdiction** (string): The tax jurisdiction (e.g., "Myrtle Beach").
+      * **country** (string): Country code (e.g., "US").
+      * **state** (string): State or region code (e.g., "SC").
+* **sphere\_tax\_calculation\_id** (string): Unique identifier for the tax calculation request.
+
+**Response Structure**
+
+The API will respond with the calculated tax details for each line item, along with a unique sphere tax calculation ID.
+
+```
+{
+  "lines": [
+    {
+      "id": "prod_RArEhwhXLfX5jF",
+      "tax_amounts": [
+        {
+          "amount": 100,
+          "taxable_amount": 10000,
+          "tax_rate": {
+            "percentage": 1.0,
+            "inclusive": false,
+            "display_name": "Tourism Development Tax",
+            "jurisdiction": "Myrtle Beach",
+            "country": "US",
+            "state": "SC"
+          }
+        },
+        {
+          "amount": 600,
+          "taxable_amount": 10000,
+          "tax_rate": {
+            "percentage": 6.0,
+            "inclusive": false,
+            "display_name": "State Sales Tax",
+            "jurisdiction": "South Carolina",
+            "country": "US",
+            "state": "SC"
+          }
+        }
+      ]
+    }
+  ],
+  "sphere_tax_calculation_id": "cfd1e35a-ccb8-4bf1-86ed-49e332be220b"
+}
+
+```
