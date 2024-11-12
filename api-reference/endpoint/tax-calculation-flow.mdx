@@ -1,20 +1,19 @@
 ---
 title: "Tax Calculation Flow"
-description: "This document explain how to create Stripe checkouts by using the Sphere tax calculation Api."
+description: "This document outlines the process for creating Stripe checkouts using tax rates provided by the Sphere Tax Calculation API."
 ---
 
 ---
 
-### **<u>Overview</u>**
+## **<u>Overview</u>**
 
 To create a Stripe checkout session with taxes calculated using the Sphere API, follow these steps:
-1. Call Sphere Tax Calculation API to get tax rates.
-2. Create Stripe Tax Rates for each tax rate provided by Sphere [Stripe’s Tax Rate documentation](https://docs.stripe.com/api/tax_rates/create).
-3. Create a Stripe Checkout Session and associate the calculated tax rates.
-
+1. Call the Sphere Tax Calculation API to retrieve applicable tax rates.
+2. Create Stripe Tax Rates corresponding to each rate provided by Sphere. For details, refer to [Stripe’s Tax Rate documentation](https://docs.stripe.com/api/tax_rates/create).
+3. Create a Stripe Checkout Session (Step 3a) or an Invoice (Step 3b) and, associate the Stripe tax rates derived from the Sphere API calculations.
 ---
 
-### **<u>Step 1: Call the Sphere Tax Calculation API</u>**
+## **<u>Step 1: Call the Sphere Tax Calculation API</u>**
 
 Make a **POST** request to the Sphere Tax Calculation API to retrieve applicable tax rates for a given customer address and product.
 
@@ -95,8 +94,172 @@ curl -X \
 
 ---
 
-### **<u>Step 2: Create Stripe Tax Rate Objects</u>**
+## **<u>Step 2: Create Stripe Tax Rate Objects</u>**
 
-For each tax rate returned by Sphere, create a corresponding Stripe Tax Rate object. You’ll need to pass Stripe the tax details provided by Sphere.
+For each tax rate returned by the Sphere Api, create a corresponding Stripe Tax Rate object. You’ll need to pass Stripe the tax details provided by the Sphere Api.
 [Stripe’s Tax Rate documentation](https://docs.stripe.com/api/tax_rates/create).
 
+**Sample Requests:**
+
+```
+curl https://api.stripe.com/v1/tax_rates \
+  -u "your-stripe-api-key-here" \
+  -d display_name="Tourism Development Tax" \
+  -d description="Tourism Development Tax" \
+  -d percentage=1.0 \
+  -d jurisdiction="Myrtle Beach" \
+  -d inclusive=false
+```
+
+```
+curl https://api.stripe.com/v1/tax_rates \
+  -u "your-stripe-api-key-here" \
+  -d display_name="State Sales Tax" \
+  -d description="State Sales Tax" \
+  -d percentage=6.0 \
+  -d jurisdiction="South Carolina" \
+  -d inclusive=false
+```
+
+**Note:**
+- Replace **your-stripe-api-key-here** with your actual Stripe API key.
+- All other data in the payload is sourced from the Sphere Tax API response. **(Refer to the sample response in Step 1 for details.)**
+
+After each successful request, Stripe will return a Tax Rate object that includes an **id**. Save each **id**, as you will need these in Step 3.
+Sample Tax Rate IDs:
+- txr_1QJqyzLSmZDVqIUdFs615ZB6
+- txr_1QJqztLSmZDVqIUdlZ4NjC7l
+
+---
+
+## **<u>Step 3a: Create the Stripe Checkout Session</u>**
+To initiate a checkout session or directly create an invoice, you’ll need to provide Stripe with the Tax Rate ID (from Step 2) and other relevant details. 
+For more guidance, refer to [Stripe's Checkout Session documentation](https://docs.stripe.com/api/checkout/sessions/create).
+
+**Note:** Make sure to include the **sphere_tax_calculation_id** (from Step 1) in the metadata field of the Stripe session. This ID links Sphere’s tax calculation to the Stripe checkout session, ensuring accurate tracking. 
+The method for including the sphere_tax_calculation_id varies between subscriptions and one-time payments.
+
+
+**1. Subscription Checkout Session**
+
+A subscription checkout is used for recurring payments where the customer is billed on a regular basis (e.g., monthly or annually). The checkout session links to Stripe's subscription system, allowing for automatic renewals, 
+billing cycles, and management of recurring charges.
+
+For subscriptions, add the **sphere_tax_calculation_id** within the `subscription_data[metadata]` field.
+
+**Sample cURL for Subscription:**
+```
+curl https://api.stripe.com/v1/checkout/sessions \
+  -u "your-stripe-api-key-here" \
+  --data-urlencode "success_url=redirect-url" \
+  -d "line_items[0][price]=price_1QDLJLLSmZDVqIUdhb06qBvD" \
+  -d "line_items[0][quantity]=1" \
+  -d "line_items[0][tax_rates][0]=txr_1QJqyzLSmZDVqIUdFs615ZB6" \
+  -d "line_items[0][tax_rates][1]=txr_1QJqztLSmZDVqIUdlZ4NjC7l" \  
+  -d "subscription_data[metadata][sphere_tax_calculation_id]=cfd1e35a-ccb8-4bf1-86ed-49e332be220b" \
+  -d "mode=subscription"
+```
+
+**Note:**
+- Replace **your-stripe-api-key-here** with your actual Stripe API key.
+- The Tax Rate IDs used in the cURL, were generated in Step 2.
+- The **sphere_tax_calculation_id** was provided by the Sphere Api, in Step 1.
+ 
+
+
+**2. One-Time Payment Checkout Session**
+
+A one-time payment checkout is used for a single transaction. After the payment is processed, no further charges occur unless a new payment session is created. It is typically used for one-off 
+purchases or services.
+
+For one-time payments, be sure to enable invoice creation by setting **-d "invoice_creation[enabled]=true"**. This links the sphere_tax_calculation_id to the 
+resulting invoice for tracking.
+
+Additionally, pass the **sphere_tax_calculation_id** as a custom field in the invoice to link it to the resulting Stripe invoice for accurate tracking.
+
+Here’s how you should include the **sphere_tax_calculation_id** in your request:
+
+**Sample cURL for One-Time Payment:**
+```
+curl https://api.stripe.com/v1/checkout/sessions \
+  -u "your-stripe-api-key-here" \
+  --data-urlencode "success_url=https://dashboard.staging.getsphere.com/monitoring/" \
+  -d "line_items[0][price]=price_1QIVVnLSmZDVqIUdC5FeIsRn" \
+  -d "line_items[0][quantity]=1" \
+  -d "line_items[0][tax_rates][0]=txr_1QJqyzLSmZDVqIUdFs615ZB6" \
+  -d "line_items[0][tax_rates][1]=txr_1QJqztLSmZDVqIUdlZ4NjC7l" \  
+  -d "invoice_creation[enabled]=true" \
+  -d "invoice_creation[invoice_data][custom_fields][0][name]=sphere_tax_calculation_id" \
+  -d "invoice_creation[invoice_data][custom_fields][0][value]=a0bc2cce-e028-4922-ac7e-297f52c0e3e3" \
+  -d "mode=payment"
+```
+
+**Note:**
+- Replace **your-stripe-api-key-here** with your actual Stripe API key.
+- The Tax Rate IDs used in the cURL, were generated in Step 2.
+- The **sphere_tax_calculation_id** was provided by the Sphere Api, in Step 1.
+
+
+---
+
+## **<u>Step 3b: Create Direct Invoice Creation (One-Time Payment)</u>**
+Creating an invoice directly for a one-time payment involves two steps:
+> **a. Generate the Invoice Object**\
+> First, create the invoice object for the customer.
+
+> **b. Create Invoice Items with Tax Rates**\
+> Next, add items to the invoice and apply tax rates to each item, associating them with the invoice object.
+
+
+
+**a. Creating an Invoice**
+
+To issue a direct invoice for a customer, use the following cURL command. The invoice will automatically charge the customer upon finalization.
+
+
+**Sample cURL for Generating a Stripe Invoice:**
+```
+curl https://api.stripe.com/v1/invoices \
+-u "your-stripe-api-key-here" \
+-d "customer=cus_R5WZX8xXNZRwQh" \
+-d "auto_advance=true" \
+-d "collection_method=charge_automatically" \
+-d "metadata[sphere_tax_calculation_id]=a0bc2cce-e028-4922-ac7e-297f52c0e3e3"
+```
+
+**Parameters:**
+- **customer:** The ID of the customer to whom the invoice is issued.
+- **auto_advance:** When set to true, the invoice will automatically finalize after it is created.
+- **collection_method:** charge_automatically means Stripe will charge the customer’s stored payment method.
+- **metadata[sphere_tax_calculation_id]:** Associates the invoice with an external tax calculation ID for tracking.
+
+
+**b. Adding Invoice Items with Tax Rates**
+
+Once the invoice is created, you can add items to it, each with applicable tax rates.
+
+**Sample cURL for Adding Stripe Invoice Items:**
+```
+curl https://api.stripe.com/v1/invoiceitems \
+-u "your-stripe-api-key-here" \
+-d "customer=cus_R5WZX8xXNZRwQh" \
+-d "price=price_1QIVVnLSmZDVqIUdC5FeIsRn" \
+-d "quantity=1" \
+-d "description=Product Name" \
+-d "invoice=in_1QJwL6LSmZDVqIUd8wrBeGMK" \
+-d "tax_rates[]=txr_1QJqyzLSmZDVqIUdFs615ZB6" \
+-d "tax_rates[]=txr_1QJqztLSmZDVqIUdlZ4NjC7l"
+```
+
+**Parameters:**
+- **customer:** The ID of the customer being invoiced.
+- **price:** The price ID of the product or service being added to the invoice.
+- **quantity:** Quantity of the product being invoiced.
+- **description:** A description for the invoice item, such as the product name.
+- **invoice:** The ID of the invoice to which this item should be added.
+- **tax_rates[]:** List of tax rate IDs to apply to the item.
+
+**Note:**
+- Replace **your-stripe-api-key-here** with your actual Stripe API key.
+- The Tax Rate IDs used in the cURL, were generated in Step 2.
+- The **sphere_tax_calculation_id** was provided by the Sphere Api, in Step 1.
