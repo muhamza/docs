@@ -3,6 +3,14 @@ title: "Sphere Tax Calculation API"
 description: "This API calculates tax based on the customer's address, line item details, and currency."
 ---
 
+### **<u>Prerequisites</u>**
+
+1. A Sphere account is required. You can sign up for free at [Sphere Dashboard](https://dashboard.getsphere.com/).
+2. Ensure that you have products listed under the Products tab.
+3. Verify that each product has an assigned tax code, which is used to determine whether the product is taxable or not.
+
+**Note:** If the products are not configured and you pass the product IDs in the payload, the API will return a 400 Bad Request response.
+
 ---
 
 ### **<u>Endpoint</u>**
@@ -92,7 +100,7 @@ The request should be in JSON format. Here is a sample request payload:
 
 **Response Structure**
 
-The API will respond with the calculated tax details for each line item, along with a unique sphere tax calculation ID.
+The API will respond with a 200 status code and return the calculated tax details for each line item, along with a unique Sphere tax calculation ID. 
 Here is a sample response:
 ```
 {
