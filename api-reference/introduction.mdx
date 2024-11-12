@@ -1,29 +1,34 @@
 ---
 title: "Introduction"
-description: "Example section for showcasing API endpoints"
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## Sphere Tax Calculation API
 
-## Welcome
+Welcome to the Sphere Tax Calculation API! This API allows businesses to calculate taxes accurately based on customer location and product-specific tax rates. By integrating the Sphere Tax Calculation API, you can streamline tax compliance, support jurisdiction-specific tax requirements, and provide a smooth checkout experience.
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+### Overview
 
-<Card title="Plant Store Endpoints" icon="leaf" href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json">
+The Sphere Tax Calculation API is designed to:
 
-</Card>
+- **Calculate taxes in real-time** based on customer location and applicable product tax codes.
+- **Support diverse tax jurisdictions** and tax rules, making it adaptable for global use.
+- **Simplify tax compliance** with automatic rate selection and calculation.
+- **Integrate easily** with e-commerce platforms and point-of-sale systems.
+  
+Whether you're processing one-time purchases or recurring invoices, the Sphere API ensures tax calculations are fast, accurate, and reliable.
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+The API endpoint requires authentication using an API key. To access the Sphere Tax Calculation API, you must include this API key in your request headers.
+
+### Getting Your API Key
+
+Please contact the Sphere team to obtain your unique API key. Once you have your key, you can include it in the header of each API request as shown below.
+
+### Example Header
+
+Include the API key in the `X-API-KEY` header:
 
 ```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
+X-API-KEY: YOUR_API_KEY
 ```

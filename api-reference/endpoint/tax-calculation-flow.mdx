@@ -1,0 +1,102 @@
+---
+title: "Tax Calculation Flow"
+description: "This document explain how to create Stripe checkouts by using the Sphere tax calculation Api."
+---
+
+---
+
+### **<u>Overview</u>**
+
+To create a Stripe checkout session with taxes calculated using the Sphere API, follow these steps:
+1. Call Sphere Tax Calculation API to get tax rates.
+2. Create Stripe Tax Rates for each tax rate provided by Sphere [Stripe’s Tax Rate documentation](https://docs.stripe.com/api/tax_rates/create).
+3. Create a Stripe Checkout Session and associate the calculated tax rates.
+
+---
+
+### **<u>Step 1: Call the Sphere Tax Calculation API</u>**
+
+Make a **POST** request to the Sphere Tax Calculation API to retrieve applicable tax rates for a given customer address and product.
+
+**Endpoint:**
+https://server.getsphere.com/tax_api/calculate_tax
+
+**Request Headers:**
+* **Header Key:** X-API-KEY
+* **Header Value:** YOUR_API_KEY
+
+**Sample Request:**
+
+```
+curl -X \
+ POST https://server.getsphere.com/tax_api/calculate_tax \
+-H \
+ "Content-Type: application/json" \
+-H \
+ "X-API-KEY: sph_api_key" \
+-d '{
+  "customer_address": {
+    "address1": "Investors Boulevard",
+    "city": "Myrtle Beach",
+    "state": "SC",
+    "postal_code": "29579",
+    "country": "US"
+  },
+  "line_items": [
+    {
+      "amount": 10000,
+      "product_id": "prod_RArEhwhXLfX5jF",
+      "discount_amount": 0,
+      "tax_inclusive": false
+    }
+  ],
+  "currency": "usd"
+}'
+```
+
+**Sample Response:**
+
+```
+{
+  "lines": [
+    {
+      "id": "prod_RArEhwhXLfX5jF",
+      "tax_amounts": [
+        {
+          "amount": 100,
+          "taxable_amount": 10000,
+          "tax_rate": {
+            "percentage": 1.0,
+            "inclusive": false,
+            "display_name": "Tourism Development Tax",
+            "jurisdiction": "Myrtle Beach",
+            "country": "US",
+            "state": "SC"
+          }
+        },
+        {
+          "amount": 600,
+          "taxable_amount": 10000,
+          "tax_rate": {
+            "percentage": 6.0,
+            "inclusive": false,
+            "display_name": "State Sales Tax",
+            "jurisdiction": "South Carolina",
+            "country": "US",
+            "state": "SC"
+          }
+        }
+      ]
+    }
+  ],
+  "sphere_tax_calculation_id": "cfd1e35a-ccb8-4bf1-86ed-49e332be220b"
+}
+```
+
+---
+
+### **<u>Step 2: Create Stripe Tax Rate Objects</u>**
+
+For each tax rate returned by Sphere, create a corresponding Stripe Tax Rate object. You’ll need to pass Stripe the tax details provided by Sphere.
+[Stripe’s Tax Rate documentation](https://docs.stripe.com/api/tax_rates/create).
+

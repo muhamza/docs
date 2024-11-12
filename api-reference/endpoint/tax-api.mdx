@@ -1,23 +1,27 @@
 ---
-description: "This API calculates tax based on the customer's address, line item details, and currency."
 title: "Sphere Tax Calculation API"
+description: "This API calculates tax based on the customer's address, line item details, and currency."
+---
+
 ---
 
 ### **<u>Endpoint</u>**
 
-**URL:** [https://server.getsphere.com/tax\_api/calculate\_tax](https://server.getsphere.com/tax_api/calculate_tax)
-**Method:** POST
+* **URL:** [https://server.getsphere.com/tax\_api/calculate\_tax](https://server.getsphere.com/tax_api/calculate_tax)\
+* **Method:** POST
+
+---
 
 ### **<u>Authentication</u>**
 
 To access this endpoint, you need an API key, which must be provided in the request header.
 
 * **Header Key:** X-API-KEY
-* **Header Value:** sph\_api\_key
+* **Header Value:** YOUR_API_KEY
 
-#### **<u>Field Descriptions</u>**
+---
 
-#### **Field Descriptions for Request**
+### **<u>Request Payload</u>**
 
 **1. customer\_address (object, required):**
 Contains the customer's address details for tax calculation.
@@ -35,14 +39,12 @@ A list of items for which tax needs to be calculated.
 Each item includes:
 
 * **amount** (integer, required): The item's price in cents (e.g., 10000 for $100.00).
-* **product\_id** (string, required): Unique identifier for the product.This id has already been defined in Sphere (under the Products tab).
+* **product\_id** (string, required): Unique identifier for the product. This id has already been defined in Sphere (under the Products tab).
 * **discount\_amount** (integer, optional, default 0): Discount applied to the item in cents.
 * **tax\_inclusive** (boolean, optional, default false): Indicates if the item price includes tax.
 
 **3. currency (string, required):**
 The currency code (ISO 4217 format) in which the amounts are specified. For example: "usd".
-
-
 
 **Request Structure**
 
@@ -70,7 +72,9 @@ The request should be in JSON format. Here is a sample request payload:
 
 ```
 
-#### **Field Descriptions for Response**
+---
+
+### **<u>API Response</u>**
 
 * **lines** (array): Contains tax information for each line item.
   * **id** (string): Product ID of the line item.
@@ -89,7 +93,7 @@ The request should be in JSON format. Here is a sample request payload:
 **Response Structure**
 
 The API will respond with the calculated tax details for each line item, along with a unique sphere tax calculation ID.
-
+Here is a sample response:
 ```
 {
   "lines": [
@@ -127,3 +131,55 @@ The API will respond with the calculated tax details for each line item, along w
 }
 
 ```
+
+---
+
+### **<u>Error Codes and Messages</u>**
+
+When calling the Sphere Tax Calculation API, you may encounter the following error responses. These error codes indicate specific issues with the data provided in the request.
+
+**1. Unauthorized Access**
+```
+{
+  "type": "api_error",
+  "code": "unauthorized_access"
+}
+```
+- **Description:** This error occurs when the API key provided in the request header is either missing or invalid, resulting in denied access to the Sphere Tax Calculation API.
+- **Resolution:** Verify that the API key is correctly included in the request headers. Ensure the key is correct, active, and authorized for this endpoint.
+<br/>
+
+**2. Invalid Customer Tax Location**
+```
+{
+  "type": "api_error",
+  "code": "customer_tax_location_invalid",
+  "message": "The customer address is either invalid or incomplete."
+}
+```
+- **Description:** This error occurs when the customer's address information in the request payload is incomplete or invalid. Ensure that the address fields, particularly address1, city, state, postal_code, and country, are correctly populated and valid.
+- **Resolution:** Verify the address information and resend the request.
+<br/>
+
+**3. Invalid Product Tax Code**
+```
+{
+  "type": "api_error",
+  "code": "invalid_product_tax_code",
+  "message": "One or more products are missing a tax code assignment in Sphere. Please ensure all products have a tax code to proceed."
+}
+```
+- **Description:** This error indicates that one or more products listed in the line_items array lack a tax code assignment in Sphere. Tax codes are required to calculate the appropriate tax rates for each product.
+- **Resolution:** Review the products in the line_items section, and make sure each has a valid tax code assigned in Sphere. Once the missing tax codes are added, retry the request.
+<br/>
+
+**4. Too Many Requests**
+```
+{
+  "type": "api_error",
+  "code": "too_many_requests"
+}
+
+```
+- **Description:** This error indicates that the client has exceeded the maximum number of requests allowed within a specific time frame. The Sphere API enforces rate limits to prevent overloading and ensure fair access.
+- **Resolution:** Pause requests temporarily to allow the rate limit to reset. You may need to wait several minutes before retrying. If you frequently encounter this error, consider adjusting the frequency of requests or contacting Sphere support to discuss rate limit options.
