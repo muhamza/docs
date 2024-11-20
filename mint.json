@@ -7,7 +7,7 @@
   },
   "favicon": "/favicon.svg",
   "colors": {
-    "primary": "#BCBCEC",
+    "primary": "#6f6fed",
     "light": "#BCBCEC",
     "dark": "#251F47",
     "anchors": {
@@ -33,9 +33,9 @@
   ],
   "anchors": [
     {
-      "name": "Sphere Dashboard",
+      "name": "Sphere",
       "icon": "browser",
-      "url": "https://dashboard.getsphere.com/"
+      "url": "https://getsphere.com/"
     },
     {
       "name": "API Documentation",
