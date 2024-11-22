@@ -21,10 +21,6 @@
       "url": "nicholas@getsphere.com"
     }
   ],
-  "topbarCtaButton": {
-    "name": "Sphere Dashboard",
-    "url": "https://dashboard.getsphere.com/"
-  },
   "tabs": [
     {
       "name": "API Reference",
@@ -62,6 +58,7 @@
     "linkedin": "https://www.linkedin.com/school/getsphere/"
   },
   "metadata": {
+    "og:title": "Sphere | API Docs",
     "og:image": "https://sphere-public-images.s3.us-west-2.amazonaws.com/sphere-open-graph.png"
   }
 }
