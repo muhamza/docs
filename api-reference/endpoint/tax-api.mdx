@@ -6,7 +6,7 @@ description: "This API calculates tax based on the customer's address, line item
 ### **<u>Prerequisites</u>**
 
 1. A Sphere account is required. You can sign up for free at [Sphere Dashboard](https://dashboard.getsphere.com/).
-2. Ensure that you have products listed under the Products tab.
+2. Ensure that products are listed under the "Products" tab. **Note:** To populate the "Products" tab, you need to first connect to a billing provider in the Sphere app. This connection will automatically fetch and display the products from the billing provider.
 3. Verify that each product has an assigned tax code, which is used to determine whether the product is taxable or not.\
 **Note:** If the products are not configured and you pass the product IDs in the payload, the API will return a 400 Bad Request response.
 4. Ensure you are registered with the relevant tax authority for the customer address you will provide, and confirm that the **tax calculation feature** is enabled in Sphere.\
@@ -16,7 +16,7 @@ description: "This API calculates tax based on the customer's address, line item
 
 ### **<u>Endpoint</u>**
 
-* **URL:** [https://server.getsphere.com/tax\_api/calculate\_tax](https://server.getsphere.com/tax_api/calculate_tax)\
+* **URL:** [https://server.getsphere.com/tax\_api/calculate\_tax](https://server.getsphere.com/tax_api/calculate_tax)
 * **Method:** POST
 
 ---
@@ -48,12 +48,12 @@ A list of items for which tax needs to be calculated.
 Each item includes:
 
 * **amount** (integer, required): The item's price in cents (e.g., 10000 for $100.00).
-* **product\_id** (string, required): Unique identifier for the product. This id has already been defined in Sphere (under the Products tab).
+* **product\_id** (string, required): Unique identifier for the product. This id has already been defined in Sphere (under the Products tab). It's important to note that this represents the product's ID within the billing platform. For example, if Stripe is used, the ID might look like prod_ABC123.
 * **discount\_amount** (integer, optional, default 0): Discount applied to the item in cents.
 * **tax\_inclusive** (boolean, optional, default false): Indicates if the item price includes tax.
 
 **3. currency (string, required):**
-The currency code (ISO 4217 format) in which the amounts are specified. For example: "usd".
+The currency code (ISO 4217 format) in which the amounts are specified. For example: "usd". **Note:** Only lowercase currency codes are accepted.
 
 **Request Structure**
 
